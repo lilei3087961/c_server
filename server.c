@@ -7,6 +7,7 @@
 #include <stdio.h>        // for printf
 #include <stdlib.h>        // for exit
 #include <string.h>        // for bzero
+#include "time.h"          //for time
 /*
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -18,7 +19,19 @@
 #define BUFFER_SIZE 30000
 #define BUFFER_LIMIT 1448 
 #define FILE_NAME_MAX_SIZE 512
+
  
+long getNowMills(){
+    struct timeval time;
+    gettimeofday(&time,NULL);
+    long mills =  (1000000*time.tv_sec+time.tv_usec)/1000;   
+    //printf("now mills: %ld \n",mills);
+    return mills;
+}
+void timediff(long start,long end){
+    long timeuse = end - start;
+    printf("time diff: %ld ms\n", timeuse);
+}
 int main(int argc, char **argv)
 {
     //设置一个socket地址结构server_addr,代表服务器internet地址, 端口
@@ -27,8 +40,7 @@ int main(int argc, char **argv)
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htons(INADDR_ANY);
     server_addr.sin_port = htons(HELLO_WORLD_SERVER_PORT);
- 
-    printf("main~~~~! \n");
+    printf("main~~~~!time:%ld \n",getNowMills());
     //创建用于internet的流协议(TCP)socket,用server_socket代表服务器socket
     int server_socket = socket(PF_INET,SOCK_STREAM,0);
     if( server_socket < 0)
@@ -61,6 +73,10 @@ int main(int argc, char **argv)
         socklen_t length = sizeof(client_addr);
         printf("wait for connecting...\n");
         int new_server_socket = accept(server_socket,(struct sockaddr*)&client_addr,&length);
+        long timeBegin = getNowMills();
+        long timeEnd;
+        long timeDiff;
+        printf("connecting...timeBegin:%ld \n",timeBegin);
         if ( new_server_socket < 0)
         {
             printf("Server Accept Failed!\n");
@@ -68,27 +84,33 @@ int main(int argc, char **argv)
         }
         short read = 1;
         char buffer[BUFFER_SIZE];
+        char byteChar;
         bzero(buffer, BUFFER_SIZE);
         //add for by lilei begin
 	while(read){
-	   printf(">>>> recv() 111 \n");
+	   //printf(">>>> recv() 111 \n");
            length = recv(new_server_socket,buffer,BUFFER_SIZE,0);
            if(length < BUFFER_LIMIT)
              read = 0;
-           printf(">>>> recv() length:%d,read:%d \n",length,read);
+           //printf(">>>> recv() length:%d,read:%d \n",length,read);
            if (length < 0)
            {
              printf("Server Recieve Data Failed!\n");
              break;
            }else{
-             printf(">>>>received data is : %d\n ", length );
+             //printf(">>>>received data is : %d\n ", length );
              int i = 0; 
-             for(i; i < length; i++)
-             printf(">>>data is %d\n", buffer[i]);
+             for(i; i < length; i++){
+		byteChar = buffer[i];//test
+             //printf(">>>data is %d\n", buffer[i]);
+	     }
            }
-           printf(">>>> recv()222 \n");   
+           //printf(">>>> recv()222 ");   
 
         }
+        timeEnd = getNowMills();
+        timeDiff = timeEnd - timeBegin;
+        printf(">>>> recv()222 timeEnd:%ld timeDiff:%ld \n",timeEnd,timeDiff);   
         //add by lilei end
         /*  if (length < 0)
         {

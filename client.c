@@ -8,6 +8,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+long getNowMills(){
+    struct timeval time;
+    gettimeofday(&time,NULL);
+    long mills =  (1000000*time.tv_sec+time.tv_usec)/1000;   
+    //printf("now mills: %ld \n",mills);
+    return mills;
+}
 int main()
 {
   void sendJson(int sd);
@@ -53,7 +60,23 @@ int main()
 /*  send(sd,msgState,sizeof(msgState),0);       //发送configState
   send(sd,className,sizeof(className),0);     //发送类信息 */
   //getOneApp(sd);
-  sendJson(sd); 
+  long timeBegin = getNowMills();
+  long timeEnd;
+  long timeDiff;
+  int i;
+  int count = 40;
+  printf("send all app begin timeBegin:%ld \n",timeBegin);
+  for(i=0;i<count;i++){
+    printf("send i:%d \n",i);
+    sd=socket(AF_INET,SOCK_STREAM,0);
+    if(connect(sd,(struct sockaddr*)&pin,sizeof(pin))==-1){
+      printf("Connect Error!\n");
+    }     
+    sendJson(sd); 
+  }
+  timeEnd = getNowMills();
+  timeDiff = timeEnd - timeBegin;
+  printf("send all app end timeEnd:%ld timeDiff:%ld \n",timeEnd,timeDiff); 
   printf("2222 end\n");
 }
 void sendJson(int sd){
@@ -64,12 +87,12 @@ void sendJson(int sd){
   char test[] ="{\":\"}:::{}}}{{{,,,,::""";
   char jsonStr1[] ="{\"messageType\":104}"; //104 get all
   char jsonStr2[]= "{\"messageType\":130,\"timeInMillis\":1420078210000}";
-  char jsonStr[] ="{\"messageType\":111,\"packageName\":\"com.android.contacts\",\"activityName\":\"com.android.contacts.activities.PeopleActivity\"}";
+  char jsonStr[] ="{\"messageType\":106,\"packageName\":\"com.android.contacts\",\"activityName\":\"com.android.contacts.activities.PeopleActivity\"}";
   char jsonStr4[] = "{\"messageType\":129,\"language\":\"zh\",\"area\":\"CN\"}";
 
   send(sd,jsonStr,sizeof(jsonStr),0);       //发送configState
+ // send(sd,char2,sizeof(char2),0);
   printf("sendJson() json size:%ld json str:%s\n",sizeof(jsonStr),jsonStr);
-
 }
 void getOneApp(int sd){
   char newLine[1] = "\n";
