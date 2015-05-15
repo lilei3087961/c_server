@@ -18,7 +18,6 @@ long getNowMills(){
 int main()
 {
   void sendJson(int sd);
-  void getOneApp(int sd);
   printf("test clent~~ \n");
   struct sockaddr_in pin;
   struct hostent *nlp_host;
@@ -64,7 +63,7 @@ int main()
   long timeEnd;
   long timeDiff;
   int i;
-  int count = 40;
+  int count = 1;
   printf("send all app begin timeBegin:%ld \n",timeBegin);
   for(i=0;i<count;i++){
     printf("send i:%d \n",i);
@@ -85,11 +84,12 @@ void sendJson(int sd){
   char packageName[] = "com.android.settings";
   char className[] = "com.android.settings.Settings"; 
   char test[] ="{\":\"}:::{}}}{{{,,,,::""";
-  char jsonStr1[] ="{\"messageType\":104}"; //104 get all
+  char jsonStr[] ="{\"messageType\":104}"; //104 get all,111 start app,106 get one app
   char jsonStr2[]= "{\"messageType\":130,\"timeInMillis\":1420078210000}";
-  char jsonStr[] ="{\"messageType\":106,\"packageName\":\"com.android.contacts\",\"activityName\":\"com.android.contacts.activities.PeopleActivity\"}";
+  char jsonStr3[] ="{\"messageType\":106,\"packageName\":\"com.android.contacts\",\"activityName\":\"com.android.contacts.activities.PeopleActivity\"}";
   char jsonStr4[] = "{\"messageType\":129,\"language\":\"zh\",\"area\":\"CN\"}";
-
+  char jsonStr5[] = "abc";
+  
   send(sd,jsonStr,sizeof(jsonStr),0);       //发送configState
  // send(sd,char2,sizeof(char2),0);
   printf("sendJson() json size:%ld json str:%s\n",sizeof(jsonStr),jsonStr);

@@ -76,41 +76,42 @@ int main(int argc, char **argv)
         long timeBegin = getNowMills();
         long timeEnd;
         long timeDiff;
-        printf("connecting...timeBegin:%ld \n",timeBegin);
+        printf("get a connecting...timeBegin:%ld \n",timeBegin);
         if ( new_server_socket < 0)
         {
             printf("Server Accept Failed!\n");
             break;
         }
         short read = 1;
+        int count = 1;
         char buffer[BUFFER_SIZE];
         char byteChar;
         bzero(buffer, BUFFER_SIZE);
         //add for by lilei begin
 	while(read){
-	   //printf(">>>> recv() 111 \n");
+	   printf(">>>> recv() %d begin \n",count);
            length = recv(new_server_socket,buffer,BUFFER_SIZE,0);
            if(length < BUFFER_LIMIT)
              read = 0;
-           //printf(">>>> recv() length:%d,read:%d \n",length,read);
+           printf(">>>> recv() length:%d,is need next recv():%d \n",length,read);
            if (length < 0)
            {
              printf("Server Recieve Data Failed!\n");
              break;
            }else{
-             //printf(">>>>received data is : %d\n ", length );
+             printf(">>>>received data length is: %d\n", length );
              int i = 0; 
              for(i; i < length; i++){
 		byteChar = buffer[i];//test
-             //printf(">>>data is %d\n", buffer[i]);
+             printf(">>>data is %d\n", buffer[i]);
 	     }
            }
-           //printf(">>>> recv()222 ");   
-
+           printf(">>>> recv() %d end \n",count);   
+           count++;
         }
         timeEnd = getNowMills();
         timeDiff = timeEnd - timeBegin;
-        printf(">>>> recv()222 timeEnd:%ld timeDiff:%ld \n",timeEnd,timeDiff);   
+        printf(">>>>all recv() end 222 timeEnd:%ld timeDiff:%ld \n",timeEnd,timeDiff);   
         //add by lilei end
         /*  if (length < 0)
         {
