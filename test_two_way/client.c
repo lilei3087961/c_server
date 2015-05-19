@@ -7,12 +7,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
-int sd = -1;
 
-int createSocket()
+int clientSend()
 {
-  printf("createSocket()~~ \n");
+  printf("test clent send~~ \n");
   struct sockaddr_in pin;
   struct hostent *nlp_host;
   int sd; 
@@ -28,7 +26,7 @@ int createSocket()
   if((nlp_host=gethostbyname(host_name))==0){
     printf("Resolve Error!\n");
   }
-  printf("createSocket() 111 connecting:%s port:%d\n",host_name,port);
+  printf("1111 connecting:%s port:%d\n",host_name,port);
   //设置pin变量，包括协议、地址、端口等，此段可直接复制到自己的程序中
   bzero(&pin,sizeof(pin));
   pin.sin_family=AF_INET;                 //AF_INET表示使用IPv4
@@ -43,25 +41,11 @@ int createSocket()
   if(connect(sd,(struct sockaddr*)&pin,sizeof(pin))==-1){
     printf("Connect Error!\n");
   }
-  return sd;
- /* char jsonStr[] = "client";
-  send(sd,jsonStr,sizeof(jsonStr),0);       //发送数据
-  close(sd);
-  printf("sendJson() json size:%ld json str:%s\n",sizeof(jsonStr),jsonStr);
-  printf("2222 end~~~\n");//*/
-}
-void clientSend(int count){
   char jsonStr[] = "client";
-  sprintf(jsonStr,"%d",count);
-  if(sd == -1){
-    sd = createSocket();
-  }
   send(sd,jsonStr,sizeof(jsonStr),0);       //发送数据
-  //close(sd);
   printf("sendJson() json size:%ld json str:%s\n",sizeof(jsonStr),jsonStr);
-  printf("2222 end~~~\n");
+  printf("2222 end\n");
 }
-
 unsigned char HexToChar(unsigned char bChar){
     if((bChar>=0x30)&&(bChar<=0x39))
         bChar -= 0x30;
@@ -104,10 +88,5 @@ void test(){
 }
 int main(){
    printf(">>main \n");
-   //test();
-   int i;
-   for(i=0;i<5;i++){
-     clientSend(i);
-     sleep(2);    
-   }
+   test();
 }

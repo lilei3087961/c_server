@@ -22,6 +22,7 @@
 pthread_t thread[2]; //¿¿¿¿¿¿¿¿¿¿
 pthread_mutex_t mut; //¿¿¿¿¿
 int sid = -1;
+int twoWay =1;  //whether in two-way long connect mode
 void clientSend(int count){
   if(sid == -1){
      printf(">>clientSend()~~ ~~sid == -1  \n");
@@ -94,20 +95,24 @@ int main(int argc, char **argv)
         int lenAll = 0;
         short read = 1;
         int countRecv = 1;
-	while(read)
+	while(twoWay)
  	{
 	   printf(">>>> recv() %d begin \n",countRecv);
            length = recv(new_server_socket,buffer,BUFFER_SIZE,0);
-           if(length < BUFFER_LIMIT)
+           if(length < BUFFER_LIMIT){
              read = 0;
-           printf(">>>> recv() length:%d,is need next recv():%d \n",length,read);
-           if (length < 0)
+             
+           }else{
+             read = 1;      //reset flag read
+           }
+           printf(">>>>get a new recv() length:%d,is need next recv():%d \n",length,read);
+           if (length <= 0)
            {
              printf("Server Recieve Data Failed!\n");
              break;
            }else
 	   {
-             //printf(">>>>received data length is: %d size char is:%ld \n", length,sizeof(char));
+             printf(">>>>received data length is: %d size char is:%ld \n", length,sizeof(char));
 	          
              //writePngFile(buffer,length);
 	     char byteChars[length+1];  //for save chars without NULL
@@ -125,6 +130,8 @@ int main(int argc, char **argv)
              if(read == 0 && countRecv ==1){ //parse,only recv() one time
                byteChars[len] = END_CHAR;    
                testJson(byteChars,len);
+               countRecv = 1;  //reset flag countRecv
+               lenAll = 0;
              }else{  //shoul recv more than one time
                int i,j;
                for(j=lenAll;j<lenAll+len;j++){
@@ -134,12 +141,15 @@ int main(int argc, char **argv)
                if(read ==0){
 		 byteCharsAll[lenAll] = END_CHAR;
                  testJson(byteCharsAll,lenAll);
-
-	       }
+                 countRecv = 1;
+                 lenAll = 0;
+	       }else{
+                 countRecv++;  //increase flag 
+               }
              }
            }
            //printf(">>>> recv() %d end \n",countRecv);   
-           countRecv++;
+           //countRecv++;
         }
         printf(">>>>>all recv() end 222 sendCount:%d \n",sendCount);   
         if(sendCount < 2){
@@ -149,7 +159,7 @@ int main(int argc, char **argv)
     	   //printf("<<no close new_server_socket  begin send size:%ld json str:%s >>sendCount:%d\n",sizeof(jsonStr),jsonStr,sendCount); //*/
 	   //clientSend(sendCount); //
         }
-        //close(new_server_socket);
+        close(new_server_socket);
         
     }
     close(server_socket);

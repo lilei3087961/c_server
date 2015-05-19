@@ -141,15 +141,18 @@ void sendMsgToAndroid(char * jsonString){
      }   
    }
    newStr[j] = '\0';
-   sd = createSocket();
-   printf(">>sendMsgToAndroid()>>222 sd is:%d >>newStr length is:%d >>newStr is:%s  \n",sd,j,newStr);
+   if(sd == -1){
+     printf(">>sendMsgToAndroid() sd == -1 should createSocket! #### \n");
+     sd = createSocket();
+   }
+   printf(">>sendMsgToAndroid()>>222 newStr length is:%d >>newStr is:%s \n",j,newStr);
    send(sd,newStr,strlen(newStr)*sizeof(char),0);
-   close(sd); //if in two way remove this
+   //close(sd); //if in two way remove this
 }
 //test begin----------------------------
 void testJson(char* buf,int n){
    int i,j;
-   printf(">>testJson() ~000>>buf size:%d >>buf is:%s \n",n,buf);
+   //printf(">>testJson() ~000>>buf size:%d >>buf is:%s \n",n,buf);
    printf(">>testJson() ~000>>buf size:%d  \n",n);
    if(n<=0)
      return;
@@ -200,12 +203,12 @@ void testJson(char* buf,int n){
      bzero(title,SMALL_TEXT_BUFFER_SIZE);             //clear title
      snprintf(title,SMALL_TEXT_BUFFER_SIZE,"%s",fmt->valuestring);
      int length  = strlen(title);
-     char * convert = base64_decode(title,length);
-     int lenBase64 = strlen(convert);
-     printf(">>testJson() 33>>base64 convert is:%s >>title is:%s \n",convert,title); 
+     char convert[length];
+     code_convert(title,length,convert,length);
+     printf(">>testJson() 33>>title length is:%ld>>convert is:%s >>title is:%s \n",strlen(title),convert,title); 
      int i;
-     for(i = 0;i<lenBase64;i++){
-       printf(">>testJson() 33> convert[%d]:%d \n",i,convert[i]);
+     for(i=0;i<length;i++){
+       printf(">>testJson() 33>>title[%d]:%d convert[%d]:%d \n",i,title[i],i,convert[i]);
      }
    }
    
@@ -238,7 +241,7 @@ void testJson(char* buf,int n){
        //printf(">>testJson() 33>>packageName:%s >>className:%s \n",packageName,className);
        //get one app
        appNum++;
-       if(appNum <= 1){
+       if(appNum <= 5){
          printf(">>testJson() 33>>packageName:%s >>className:%s \n",packageName,className);
          mJSONroot = cJSON_CreateObject();  //for send to android
          cJSON_AddItemToObject(mJSONroot,KEY_MESSAGE_TYPE,cJSON_CreateNumber(MESSAGE_LINUX_GETONEAPP));
@@ -259,7 +262,7 @@ void testJson(char* buf,int n){
      case MESSAGE_ANDROID_READY:
         cJSON_AddItemToObject(mJSONroot,KEY_MESSAGE_TYPE,cJSON_CreateNumber(MESSAGE_LINUX_GETALL));
         jsonStr = cJSON_Print(mJSONroot);  
-        //printf(">>testJson() 444>>should send message is:%s >>length is:%ld \n",jsonStr,strlen(jsonStr));      
+        printf(">>testJson() 444>>should send message is:%s >>length is:%ld \n",jsonStr,strlen(jsonStr));      
         sendMsgToAndroid(jsonStr);    
 	break;
      
