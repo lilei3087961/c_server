@@ -77,11 +77,11 @@ static char find_pos(char ch)
     return (ptr - base); 
 } 
 /* */ 
-char *base64_decode(const char *data, int data_len) 
+char * base64_decode(const char *data, int data_len,int * len) //add len by lilei
 { 
     int ret_len = (data_len / 4) * 3; 
     int equal_count = 0; 
-    char *ret = NULL; 
+    char *ret = NULL;
     char *f = NULL; 
     int tmp = 0; 
     int temp = 0; 
@@ -122,7 +122,10 @@ char *base64_decode(const char *data, int data_len)
         exit(0); 
     } 
     memset(ret, 0, ret_len); 
-    f = ret; 
+    f = ret;
+    int count = 0;
+    printf("lilei>>base64_decode()>>>ret_len is:%d \n",ret_len);
+    printf("lilei>>base64_decode()>>>data_len is:%d >>>equal_count is:%d \n",data_len,equal_count); 
     while (tmp < (data_len - equal_count)) 
     { 
         temp = 0; 
@@ -145,11 +148,19 @@ char *base64_decode(const char *data, int data_len)
             { 
                 break; 
             } 
-            *f = (char)((prepare>>((2-i)*8)) & 0xFF); 
+            //modify by lilei begin
+            //*f = (char)((prepare>>((2-i)*8)) & 0xFF);
+            char ch = (char)((prepare>>((2-i)*8)) & 0xFF);
+            *f = ch; 
+            count++;
+            //printf("lilei>>>base64_decode %d is:%d \n",count,ch);
+            //modify by lilei end
             f++; 
         } 
     } 
-    *f = '\0'; 
+    *f = '\0';
+    printf("lilei>>base64_decode()>>> count is:%d \n",count);
+    *len = count; //add by lilei begin 
     return ret; 
 }
 
