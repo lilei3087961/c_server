@@ -5,6 +5,7 @@
 #include <netinet/in.h>    // for sockaddr_in
 #include <netdb.h>
 #include <iconv.h>         //for code convert
+#include <time.h>          //for time
 #include "cJSON.h"
 #include "byteMap.h"
 #include "base64.h"
@@ -26,12 +27,19 @@ const short jsonContainTitle[] ={MESSAGE_ANDROID_SENDONEAPP,MESSAGE_ANDROID_ADDO
 const short jsonContainBytemap[] ={MESSAGE_ANDROID_SENDONEAPP,MESSAGE_ANDROID_ADDONE,MESSAGE_ANDROID_UPDATEONE};
 const short jsonContainAllAppInfo[]={MESSAGE_ANDROID_APPBASICINFO};
 
-const char * base64char = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 int sd = -1; //for single instance
 
 void print1(){
   printf(">>byteMap.print1()1111 \n");
 }
+long getNowMills(){
+    struct timeval time;
+    gettimeofday(&time,NULL);
+    long mills =  (1000000*time.tv_sec+time.tv_usec)/1000;   
+    //printf("now mills: %ld \n",mills);
+    return mills;
+}
+
 //for decode begin--------------------
 //dec ascii char to char
 unsigned char decToChar(char num){
@@ -67,7 +75,7 @@ int code_convert(char *inbuf,size_t inlen,char *outbuf,size_t outlen)
 //file operate begin ---------
 void writeTxtFile(char buffer[],int n){
   FILE * file;
-  file = fopen("1.txt","ab+"); //b is byte
+  file = fopen("images/1.txt","ab+"); //b is byte
   fwrite(buffer,n,1,file);
   fclose(file);
 }
@@ -78,11 +86,21 @@ void writePngFile(char buffer[],int n){
   fwrite(buffer,n,1,file);
   fclose(file);  
 }
-void writePngFileBase64(char base64[],int n){
-  size_t bytes;
-  unsigned char bindata[35000];
-  //bytes = base64_decode( base64,bindata);
-  printf(">>call writePngFileBase64() base64 size is:%d bindata size is:%d \n",n,(int)bytes); 
+void writePngFileBase64(char * buf,int lenBuf,char * title,int lenTitle){
+  int lenDec = -1;
+  char * convert = base64_decode(buf,lenBuf,&lenDec);
+  int lenBase64 = strlen(convert);
+  char path[256] = "images/";
+  char dot[] =".png";
+  strcat(path,title);
+  strcat(path,dot);
+  printf(">>writePngFileBase64>>base64 decode buf size is:%d >>origin buff size is:%d\n",lenBase64,lenBuf);
+  printf(">>writePngFileBase64>>new path is:%s>>base64 decode buf new size is:%d \n",path,lenDec);
+  FILE * file;
+  file = fopen(path,"ab+");
+  fwrite(convert,lenDec,1,file);
+  fclose(file);  //*/
+  
 }
 
 //file operate end 
@@ -141,18 +159,15 @@ void sendMsgToAndroid(char * jsonString){
      }   
    }
    newStr[j] = '\0';
-   if(sd == -1){
-     printf(">>sendMsgToAndroid() sd == -1 should createSocket! #### \n");
-     sd = createSocket();
-   }
-   printf(">>sendMsgToAndroid()>>222 newStr length is:%d >>newStr is:%s \n",j,newStr);
+   sd = createSocket();
+   printf(">>sendMsgToAndroid()>>222 sd is:%d >>newStr length is:%d >>newStr is:%s  \n",sd,j,newStr);
    send(sd,newStr,strlen(newStr)*sizeof(char),0);
-   //close(sd); //if in two way remove this
+   close(sd); //if in two way remove this
 }
 //test begin----------------------------
 void testJson(char* buf,int n){
    int i,j;
-   //printf(">>testJson() ~000>>buf size:%d >>buf is:%s \n",n,buf);
+   printf(">>testJson() ~000>>buf size:%d >>buf is:%s \n",n,buf);
    printf(">>testJson() ~000>>buf size:%d  \n",n);
    if(n<=0)
      return;
@@ -196,19 +211,21 @@ void testJson(char* buf,int n){
      fmt = cJSON_GetObjectItem(JSONroot,KEY_CLASS_NAME);
      bzero(className,SMALL_TEXT_BUFFER_SIZE);         //clear className
      snprintf(className,SMALL_TEXT_BUFFER_SIZE,"%s",fmt->valuestring);
-     printf(">>testJson() 33>className is:%s \n",className);
+     printf(">>testJson() 33>className is:%s>>className len is:%ld \n",className,strlen(className));
    }
    if(isInArray(msgType,jsonContainTitle,sizeof(jsonContainTitle)/sizeof(short))){
      fmt = cJSON_GetObjectItem(JSONroot,KEY_CLASS_TITLE);
      bzero(title,SMALL_TEXT_BUFFER_SIZE);             //clear title
      snprintf(title,SMALL_TEXT_BUFFER_SIZE,"%s",fmt->valuestring);
      int length  = strlen(title);
-     char convert[length];
-     code_convert(title,length,convert,length);
-     printf(">>testJson() 33>>title length is:%ld>>convert is:%s >>title is:%s \n",strlen(title),convert,title); 
+     int lenDec = -1;
+     char * convert = base64_decode(title,length,&lenDec);
+     int lenBase64 = strlen(convert);
+     printf(">>testJson() 33>>base64 decode title is:%s >>title is:%s \n",convert,title); 
      int i;
-     for(i=0;i<length;i++){
-       printf(">>testJson() 33>>title[%d]:%d convert[%d]:%d \n",i,title[i],i,convert[i]);
+     printf(">>testJson() 33>>base64 decode title length is:%d >>origin title length is:%d \n",lenBase64,length);
+     for(i = 0;i<lenBase64;i++){
+       printf(">>testJson() 33>titile convert[%d]:%d \n",i,convert[i]);
      }
    }
    
@@ -218,6 +235,8 @@ void testJson(char* buf,int n){
      snprintf(byteMap,BYTEMAP_BUFFER_SIZE,"%s",fmt->valuestring);
      //printf(">>testJson() 33>byteMap is:%s \n",byteMap);
      printf(">>testJson() 33>byteMap length is:%ld \n",strlen(byteMap));
+     writePngFileBase64(byteMap,strlen(byteMap),className,strlen(className));//save image
+     printf(">>testJson() 33>byteMap of %s save end>>time is:%ld \n",className,getNowMills());
    }
    if(isInArray(msgType,jsonContainAllAppInfo,sizeof(jsonContainAllAppInfo)/sizeof(short))){
      fmt = cJSON_GetObjectItem(JSONroot,KEY_ALL_APPS); //this fmt is array [...]
@@ -241,7 +260,7 @@ void testJson(char* buf,int n){
        //printf(">>testJson() 33>>packageName:%s >>className:%s \n",packageName,className);
        //get one app
        appNum++;
-       if(appNum <= 5){
+       if(appNum >= 0){
          printf(">>testJson() 33>>packageName:%s >>className:%s \n",packageName,className);
          mJSONroot = cJSON_CreateObject();  //for send to android
          cJSON_AddItemToObject(mJSONroot,KEY_MESSAGE_TYPE,cJSON_CreateNumber(MESSAGE_LINUX_GETONEAPP));
@@ -262,7 +281,7 @@ void testJson(char* buf,int n){
      case MESSAGE_ANDROID_READY:
         cJSON_AddItemToObject(mJSONroot,KEY_MESSAGE_TYPE,cJSON_CreateNumber(MESSAGE_LINUX_GETALL));
         jsonStr = cJSON_Print(mJSONroot);  
-        printf(">>testJson() 444>>should send message is:%s >>length is:%ld \n",jsonStr,strlen(jsonStr));      
+        //printf(">>testJson() 444>>should send message is:%s >>length is:%ld \n",jsonStr,strlen(jsonStr));      
         sendMsgToAndroid(jsonStr);    
 	break;
      
@@ -276,9 +295,6 @@ void testJson(char* buf,int n){
 void test1(){
   char buffer[] = {97,98,99,100};
   printf(">>call test1() \n");
-  char dest[4]; 
-  ascArrToStr(dest,buffer,4);
-  printf(">>call test1() dest>>%s \n",dest); 
-  //writeTxtFile(buffer,sizeof(buffer)); 
+  writeTxtFile(buffer,sizeof(buffer)); 
 }
 //test end -----------------

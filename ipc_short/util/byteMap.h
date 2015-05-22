@@ -41,6 +41,7 @@ const short jsonContainBytemap[] ={MESSAGE_ANDROID_SENDONEAPP,MESSAGE_ANDROID_AD
 const short jsonContainBasicInfo[]={MESSAGE_ANDROID_APPBASICINFO};*/
 //test
 void print1();
+long getNowMills();
 void writeTxtFile(char buffer[],int n);
 void test1();
 void testJson(char* buf,int n);

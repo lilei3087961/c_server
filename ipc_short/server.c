@@ -80,7 +80,7 @@ int main(int argc, char **argv)
         printf("main() tid=%d, pid=%d \n", syscall(SYS_gettid), getpid()); 
         printf("wait for connecting...\n");
         int new_server_socket = accept(server_socket,(struct sockaddr*)&client_addr,&length);
-        printf("~~~get a connection! \n");
+        printf("~~~get a connection! time is:%ld \n",getNowMills());
         if ( new_server_socket < 0)
         {
             printf("Server Accept Failed!\n");

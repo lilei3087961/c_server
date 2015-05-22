@@ -84,9 +84,9 @@ void sendJson(int sd){
   char packageName[] = "com.android.settings";
   char className[] = "com.android.settings.Settings"; 
   char test[] ="{\":\"}:::{}}}{{{,,,,::""";
-  char jsonStr[] ="{\"messageType\":104}"; //104 get all,111 start app,106 get one app
+  char jsonStr1[] ="{\"messageType\":104}"; //104 get all,111 start app,106 get one app
   char jsonStr2[]= "{\"messageType\":130,\"timeInMillis\":1420078210000}";
-  char jsonStr3[] ="{\"messageType\":106,\"packageName\":\"com.android.contacts\",\"activityName\":\"com.android.contacts.activities.PeopleActivity\"}";
+  char jsonStr[] ="{\"messageType\":111,\"packageName\":\"com.UCMobile\",\"activityName\":\"com.UCMobile.main.UCMobile\"}";
   char jsonStr4[] = "{\"messageType\":129,\"language\":\"zh\",\"area\":\"CN\"}";
   char jsonStr5[] = "abc";
   
