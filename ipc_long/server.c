@@ -21,17 +21,23 @@
 #define FILE_NAME_MAX_SIZE 512
 pthread_mutex_t mut; //¿¿¿¿¿
 int sid = -1;
-int twoWay =1;  //whether in two-way long connect mode
+const char READ_BEGIN = 0xff;
+const char READ_END = 0xfe;
+const char END_CHAR = '\0'; 
+//int twoWay =1;  //whether in two-way long connect mode
 void * RecvSocket(void * fd){
   int fdSocket = *(int*)fd;
   printf(">>>>RecvSocket() begin fdSocket is: %d  \n",fdSocket);
   char buffer[BUFFER_SIZE];
   bzero(buffer, BUFFER_SIZE);
   //add for by lilei begin
-  char byteCharsAll[BUFFER_SIZE];
-  bzero(byteCharsAll,BUFFER_SIZE);
+  char byteCharsMsg[BUFFER_SIZE]; //to store one messgage
+  bzero(byteCharsMsg,BUFFER_SIZE);
   int lenAll = 0;
-  short read = 1;
+  int index = -1;  //byteCharsMsg index
+  short read = 1;  //judge wthether > BUFFER_LIMIT
+  short readBegin = 0;  //judge wthether find byte READ_BEGIN
+  short readEnd = 0;
   int countRecv = 1;
   int length = -1;
   int sendCount = 0;
@@ -49,53 +55,43 @@ void * RecvSocket(void * fd){
       printf("Server Recieve Data Failed!\n");
       break;
     }else{
-      printf(">>>>received data length is: %d size char is:%ld \n", length,sizeof(char));
-			  
-      //writePngFile(buffer,length);
-      char byteChars[length+1];  //for save chars without NULL
-      bzero(byteChars,length+1); //clear every char to zero
+      printf(">>>>received data length is: %d \n", length);
       int i = 0,len = 0; 
       char null = NULL;
+      if(!readBegin)
+	index = -1;
       for(i; i < length; i++){
-        if(buffer[i] != null){
-	  byteChars[len] = buffer[i];//only save none null ascii char
-          len++;
-	}
 	//printf(">>>data is %d>>is not ascii zero:%d\n", buffer[i],(buffer[i] != null));
-      }
-      const char END_CHAR = '\0'; 
-      if(read == 0 && countRecv ==1){ //parse,only recv() one time
-        byteChars[len] = END_CHAR;    
-        testJson(byteChars,len,(int*)fd);
-        countRecv = 1;  //reset flag countRecv
-        lenAll = 0;
-      }else{  //shoul recv more than one time
-        int j;
-	for(j=lenAll;j<lenAll+len;j++){
-	  byteCharsAll[j] = byteChars[j-lenAll];
+        if(READ_BEGIN == buffer[i]){
+          printf(">>>>received byte READ_BEGIN~~~~~~~~~\n");
+          readBegin = 1;
+          readEnd = 0;
+        }else if(READ_END == buffer[i]){
+          printf(">>>>received byte READ_END~~~~~~~~~\n");
+          readBegin = 0;
+          readEnd =1;          
         }
-        lenAll += len;
-        if(read ==0){
-	  byteCharsAll[lenAll] = END_CHAR;
-	  testJson(byteCharsAll,lenAll,(int*)fd);
-	  countRecv = 1;
-	  lenAll = 0;
-	}else{
-	  countRecv++;  //increase flag 
-	}
+
+        if(readBegin && READ_BEGIN != buffer[i] && buffer[i] != null){
+          byteCharsMsg[++index] = buffer[i];   
+        }else if(readEnd){
+          len = index + 1;
+          index = -1;  //reset index to -1
+          byteCharsMsg[len] = END_CHAR;
+          testJson(byteCharsMsg,len,fd);
+        }      
+      }
+    
+      if(read ==0){
+        countRecv = 1;
+      }else{
+	countRecv++;  //increase flag 
       }
     }
     //printf(">>>> recv() %d end \n",countRecv);   
     //countRecv++;
   }
-  printf(">>>>>all recv() end 222 sendCount:%d \n",sendCount);   
-  if(sendCount < 2){ 
-    sendCount++; 
-    //char jsonStr[] = "adam";
-    //send(new_server_socket,jsonStr,sizeof(jsonStr),0);       //¿¿¿¿
-    //printf("<<no close new_server_socket  begin send size:%ld json str:%s >>sendCount:%d\n",sizeof(jsonStr),jsonStr,sendCount); //*/
-    //clientSend(sendCount); //
-  }
+  printf(">>>>>all recv() end 222  \n");   
   //close(fdSocket);//may close 
 }
 void RecvScoketThread(int * send_fd){

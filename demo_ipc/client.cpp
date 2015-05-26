@@ -30,12 +30,13 @@ void* RecvProc(void* pThreadParameter)
 	{
         char buffer[BUFFER_SIZE] = {'\0'};
         int length = 0;;
+        printf(">>>received before recv 111 \n");
         if (-1 == (length = recv(fdSocket,buffer,BUFFER_SIZE,0)))
         {
             printf("Client Receive Data Failed!\n");
             break;
         }
-
+            printf(">>>received after recv 222 length is:%d\n",length); 
 		static int i  = 0;
 		++i;
 		buffer[length] = 0;
@@ -82,12 +83,15 @@ int main(int argc, char **argv)
 	//RecvProc(&sockfd); //for test
 
 	char message[] ="this is client";
+        int len = strlen(message);
+        message[0] = 0x00;
+        message[len-1] = 0xff;
 	for(int i = 0;i < 6;++i)
 	{
-      send(sockfd,message,sizeof(message),0);
+          send(sockfd,message,sizeof(message),0);
 	  printf("[client] send class size: %ld\n",sizeof(message));
 
-	  sleep(5);
+	  sleep(3);
 	}
 
 	pause();

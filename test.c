@@ -41,6 +41,12 @@ void insertSort(int a[],int len){
 }
 main(){
   printf("main \n");
+  //test begin
+  char c = 0xff;
+  char d = 0xfe;
+  printf("11 0xff is:%d 0xfe is:%d \n",c,d); 
+ return;
+  //test end
   int a[] = {6,3,7,9,1};
   int i,len = sizeof(a)/sizeof(int);
   printf("11 selsort len:%d \n",len);

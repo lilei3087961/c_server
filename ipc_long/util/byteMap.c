@@ -73,34 +73,43 @@ int code_convert(char *inbuf,size_t inlen,char *outbuf,size_t outlen)
 
 //for decode end
 //file operate begin ---------
+//file operate begin ---------
+void checkOrCreateDir(char * dir){
+ if(-1 == access(dir,0)){
+    int status = -1; 
+    status = mkdir(dir,0777);
+    printf(">>checkOrCreateDir()>>dir %s not exisit!, create dir status is:%d!!\n",dir,status);
+  }   
+}
+
 void writeTxtFile(char buffer[],int n){
   FILE * file;
+  char path[256] = "images/";
+  checkOrCreateDir(path);
   file = fopen("images/1.txt","ab+"); //b is byte
   fwrite(buffer,n,1,file);
   fclose(file);
 }
-void writePngFile(char buffer[],int n){
+void writeImageFile(char * buffer,int n,char * path){ 
   FILE * file;
-  printf(">>call writePngFile() write size:%d \n",n);
-  file = fopen("2.png","ab+"); //b is byte
+  printf(">>call writeImageFile() write size:%d>>write path is:%s \n",n,path);
+  file = fopen(path,"w"); //w clear then write
   fwrite(buffer,n,1,file);
   fclose(file);  
 }
+
 void writePngFileBase64(char * buf,int lenBuf,char * title,int lenTitle){
   int lenDec = -1;
   char * convert = base64_decode(buf,lenBuf,&lenDec);
   int lenBase64 = strlen(convert);
   char path[256] = "images/";
+  checkOrCreateDir(path);
   char dot[] =".png";
   strcat(path,title);
   strcat(path,dot);
   printf(">>writePngFileBase64>>base64 decode buf size is:%d >>origin buff size is:%d\n",lenBase64,lenBuf);
   printf(">>writePngFileBase64>>new path is:%s>>base64 decode buf new size is:%d \n",path,lenDec);
-  FILE * file;
-  file = fopen(path,"ab+");
-  fwrite(convert,lenDec,1,file);
-  fclose(file);  //*/
-  
+  writeImageFile(convert,lenDec,path); 
 }
 
 //file operate end 
@@ -153,15 +162,21 @@ void sendMsgToAndroid(int * send_fd,char * jsonString){
    printf(">>sendMsgToAndroid()>>111 jsonString length is:%ld >>jsonString is:%s \n",strlen(jsonString),jsonString);
    int i,j=0;
    char ASCII32 = 32;
-   char newStr[len+1];
+   char newStr[len+3];
+   newStr[j] = 0xff; //add head -1
+   j++;
    for(i=0;i<len;i++){ 
      if(jsonString[i]>ASCII32){
        newStr[j]=jsonString[i];
        j++;
      }   
    }
+   newStr[j++] = 0xfe;  //add tail -2
    newStr[j] = '\0';
-  /* if(sd == -1){
+/*   for(i=0;i<j;i++){
+    printf(">>sendMsgToAndroid() newStr[%d]=%d char is:%c \n",i,newStr[i],newStr[i]);
+  }
+  if(sd == -1){
      printf(">>sendMsgToAndroid() sd == -1 should createSocket! #### \n");
      sd = createSocket();
    }  */   
@@ -266,7 +281,7 @@ void testJson(char* buf,int n,int * send_fd){ //add send_fd
        //printf(">>testJson() 33>>packageName:%s >>className:%s \n",packageName,className);
        //get one app
        appNum++;
-       if(appNum >=0){
+       if(appNum <= 100){
          printf(">>testJson() 33>>packageName:%s >>className:%s \n",packageName,className);
          mJSONroot = cJSON_CreateObject();  //for send to android
          cJSON_AddItemToObject(mJSONroot,KEY_MESSAGE_TYPE,cJSON_CreateNumber(MESSAGE_LINUX_GETONEAPP));

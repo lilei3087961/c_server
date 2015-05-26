@@ -73,34 +73,42 @@ int code_convert(char *inbuf,size_t inlen,char *outbuf,size_t outlen)
 
 //for decode end
 //file operate begin ---------
+void checkOrCreateDir(char * dir){
+ if(-1 == access(dir,0)){
+    int status = -1;
+    status = mkdir(dir,0777);
+    printf(">>checkOrCreateDir()>>dir %s not exisit!, create dir status is:%d!!\n",dir,status);
+  } 
+}
 void writeTxtFile(char buffer[],int n){
   FILE * file;
-  file = fopen("images/1.txt","ab+"); //b is byte
+  char path[256] = "images/";
+  checkOrCreateDir(path);
+  file = fopen("images/1.txt","ab+"); //ab+ addition byte(+ read and write)
   fwrite(buffer,n,1,file);
   fclose(file);
 }
-void writePngFile(char buffer[],int n){
+void writeImageFile(char * buffer,int n,char * path){ 
   FILE * file;
-  printf(">>call writePngFile() write size:%d \n",n);
-  file = fopen("2.png","ab+"); //b is byte
+  printf(">>call writeImageFile() write size:%d>>write path is:%s \n",n,path);
+  file = fopen(path,"w"); //w clear then write
   fwrite(buffer,n,1,file);
   fclose(file);  
 }
+
 void writePngFileBase64(char * buf,int lenBuf,char * title,int lenTitle){
   int lenDec = -1;
   char * convert = base64_decode(buf,lenBuf,&lenDec);
   int lenBase64 = strlen(convert);
   char path[256] = "images/";
+  checkOrCreateDir(path); //	
   char dot[] =".png";
-  strcat(path,title);
+  strcat(path,title);	
   strcat(path,dot);
-  printf(">>writePngFileBase64>>base64 decode buf size is:%d >>origin buff size is:%d\n",lenBase64,lenBuf);
+  printf(">>writePngFileBase64>>base64 decode string size is:%d >>origin buff size is:%d\n",lenBase64,lenBuf);
   printf(">>writePngFileBase64>>new path is:%s>>base64 decode buf new size is:%d \n",path,lenDec);
-  FILE * file;
-  file = fopen(path,"ab+");
-  fwrite(convert,lenDec,1,file);
-  fclose(file);  //*/
-  
+  writeImageFile(convert,lenDec,path);
+ 
 }
 
 //file operate end 
