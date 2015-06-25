@@ -85,11 +85,11 @@ void sendJson(int sd){
   char className[] = "com.android.settings.Settings"; 
   char test[] ="{\":\"}:::{}}}{{{,,,,::""";
   char jsonStr1[] ="{\"messageType\":104}"; //104 get all,111 start app,106 get one app
-  char jsonStr2[]= "{\"messageType\":130,\"timeInMillis\":1420078210000}";
-  char jsonStr6[] ="{\"messageType\":111,\"packageName\":\"com.android.settings\",\"activityName\":\"com.android.settings.Settings\"}";
-  char jsonStr[] ="{\"messageType\":111,\"packageName\":\"com.UCMobile\",\"activityName\":\"com.UCMobile.main.UCMobile\"}";
+  char jsonStr4[]= "{\"messageType\":130,\"timeInMillis\":1420078210000}";
+  char jsonStr3[] ="{\"messageType\":111,\"packageName\":\"com.android.contacts\",\"activityName\":\"com.android.contacts.activities.PeopleActivity\"}";
+  char jsonStr2[] ="{\"messageType\":111,\"packageName\":\"com.tencent.mobileqq\",\"activityName\":\"com.tencent.mobileqq.activity.SplashActivity\"}";
 
-  char jsonStr4[] = "{\"messageType\":129,\"language\":\"zh\",\"area\":\"CN\"}";
+  char jsonStr[] = "{\"messageType\":129,\"language\":\"zh\",\"area\":\"CN\"}";
   char jsonStr5[] = "abc";
   
   send(sd,jsonStr,sizeof(jsonStr),0);       //发送configState

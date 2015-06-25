@@ -69,10 +69,10 @@ int main(int argc, char **argv)
 	serv_addr.sin_port = htons(SERV_PORT);
 
 
-	if(-1 == connect(sockfd,(struct sockaddr*)&serv_addr,sizeof(serv_addr))){
+/*	if(-1 == connect(sockfd,(struct sockaddr*)&serv_addr,sizeof(serv_addr))){
 		printf("Connect Error!\n");
 		exit(1);
-	}
+	} */
 
 	pthread_t		thread;
 	pthread_attr_t 	attr;

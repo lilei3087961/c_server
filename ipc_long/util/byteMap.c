@@ -185,6 +185,33 @@ void sendMsgToAndroid(int * send_fd,char * jsonString){
    send(sd,newStr,strlen(newStr)*sizeof(char),0);
    //close(sd); //if in two way remove this
 }
+//for heartbeat message begin
+typedef struct Msg{
+  int * fd; 
+  char * jsonStr;
+}JsonMsg;
+
+void * sendHeartBeatMsg(void * jsonMsg){
+  JsonMsg jMsg = *(JsonMsg *)jsonMsg;
+  printf("sendHeartBeatMsg() 111 \n");
+  sleep(30);
+  printf("sendHeartBeatMsg() 222 >>fd is:%d >>jsonStr is %s \n",*jMsg.fd,jMsg.jsonStr);
+  while(1){
+    printf("sendHeartBeatMsg() ~~\n");
+    //send(jMsg.fd,jMsg.jsonStr,strlen(jMsg.jsonStr)*sizeof(char),0);
+    sendMsgToAndroid(jMsg.fd,jMsg.jsonStr); 
+    sleep(300);
+  }
+}
+sendHeartBeatInstak(JsonMsg * jMsg){
+  printf("sendHeartBeatInstak \n");
+  pthread_t thread;
+  pthread_create(&thread,NULL,sendHeartBeatMsg,jMsg);
+  //pthread_join(thread,NULL);
+}
+
+
+
 //test begin----------------------------
 void testJson(char* buf,int n,int * send_fd){ //add send_fd
    int i,j;
@@ -303,7 +330,16 @@ void testJson(char* buf,int n,int * send_fd){ //add send_fd
         cJSON_AddItemToObject(mJSONroot,KEY_MESSAGE_TYPE,cJSON_CreateNumber(MESSAGE_LINUX_GETALL));
         jsonStr = cJSON_Print(mJSONroot);  
         //printf(">>testJson() 444>>should send message is:%s >>length is:%ld \n",jsonStr,strlen(jsonStr));      
-        sendMsgToAndroid(send_fd,jsonStr);    
+        sendMsgToAndroid(send_fd,jsonStr);
+        //for heartbeat begin
+        mJSONroot = cJSON_CreateObject();
+        cJSON_AddItemToObject(mJSONroot,KEY_MESSAGE_TYPE,cJSON_CreateNumber(MESSAGE_ANDROID_HEART_BEAT));
+        jsonStr = cJSON_Print(mJSONroot);
+        JsonMsg * msg = (JsonMsg *)malloc(sizeof(JsonMsg));
+        msg->fd = send_fd;
+        msg->jsonStr = jsonStr;
+	sendHeartBeatInstak(msg);
+        //for heartbeat end    
 	break;
      
      default:
