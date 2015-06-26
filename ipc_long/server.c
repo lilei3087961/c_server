@@ -21,9 +21,11 @@
 #define FILE_NAME_MAX_SIZE 512
 pthread_mutex_t mut; //¿¿¿¿¿
 int sid = -1;
+const char ADD_BEGIN_END_CHAR = 0;
 const char READ_BEGIN = 0xff;
 const char READ_END = 0xfe;
-const char END_CHAR = '\0'; 
+const char END_CHAR = '\0';  
+//*/
 //int twoWay =1;  //whether in two-way long connect mode
 void * RecvSocket(void * fd){
   int fdSocket = *(int*)fd;

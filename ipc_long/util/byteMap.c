@@ -14,6 +14,11 @@
 #define LONG_TEXT_BUFFER_SIZE 3000
 #define SMALL_TEXT_BUFFER_SIZE 256
 
+const char ADD_BEGIN_END_CHAR1 = 0;
+const char READ_BEGIN1 = 0xff;
+const char READ_END1 = 0xfe;
+const char END_CHAR1 = '\0'; 
+
 const char * KEY_MESSAGE_TYPE = "messageType";
 const char * KEY_PACKAGE_NAME ="packageName";
 const char * KEY_CLASS_NAME = "activityName";
@@ -158,12 +163,21 @@ int createSocket(){
 void sendMsgToAndroid(int * send_fd,char * jsonString){
    int len = strlen(jsonString);
    sd  = *send_fd;
-   printf(">>sendMsgToAndroid()>>000 socket id is:%d \n",sd);
+   printf(">>sendMsgToAndroid()>>000 socket id is:%d>>ADD_BEGIN_END_CHAR1 is:%d \n",sd,ADD_BEGIN_END_CHAR1);
    printf(">>sendMsgToAndroid()>>111 jsonString length is:%ld >>jsonString is:%s \n",strlen(jsonString),jsonString);
    int i,j=0;
-   char ASCII32 = 32;
+   const char ASCII32 = 32;
    char newStr[len+3];
-   newStr[j] = 0xff; //add head -1
+ if(!ADD_BEGIN_END_CHAR1){//check whether add begin end char
+    for(i=0;i<len;i++){ 
+     if(jsonString[i]>ASCII32){  //filter out control chars
+       newStr[j]=jsonString[i];
+       j++;
+     }   
+   }
+   newStr[j] = '\0'; 
+ }else{
+   newStr[j] = READ_BEGIN1; //add head 0xff -1
    j++;
    for(i=0;i<len;i++){ 
      if(jsonString[i]>ASCII32){
@@ -171,7 +185,7 @@ void sendMsgToAndroid(int * send_fd,char * jsonString){
        j++;
      }   
    }
-   newStr[j++] = 0xfe;  //add tail -2
+   newStr[j++] = READ_END1;  //add tail 0xfe -2
    newStr[j] = '\0';
 /*   for(i=0;i<j;i++){
     printf(">>sendMsgToAndroid() newStr[%d]=%d char is:%c \n",i,newStr[i],newStr[i]);
@@ -181,9 +195,11 @@ void sendMsgToAndroid(int * send_fd,char * jsonString){
      sd = createSocket();
    }  */   
 
-   printf(">>sendMsgToAndroid()>>222 call send() sd is:%d >>newStr length is:%d >>newStr is:%s  \n",sd,j,newStr);
-   send(sd,newStr,strlen(newStr)*sizeof(char),0);
+ }
+ printf(">>sendMsgToAndroid()>>222 call send() sd is:%d >>newStr length is:%d >>newStr is:%s  \n",sd,j,newStr);
+ send(sd,newStr,strlen(newStr)*sizeof(char),0);
    //close(sd); //if in two way remove this
+
 }
 //for heartbeat message begin
 typedef struct Msg{
@@ -331,15 +347,15 @@ void testJson(char* buf,int n,int * send_fd){ //add send_fd
         jsonStr = cJSON_Print(mJSONroot);  
         //printf(">>testJson() 444>>should send message is:%s >>length is:%ld \n",jsonStr,strlen(jsonStr));      
         sendMsgToAndroid(send_fd,jsonStr);
-        //for heartbeat begin
-        mJSONroot = cJSON_CreateObject();
+        //for heartbeat begin do not send heartbeat message any more
+      /*  mJSONroot = cJSON_CreateObject();
         cJSON_AddItemToObject(mJSONroot,KEY_MESSAGE_TYPE,cJSON_CreateNumber(MESSAGE_ANDROID_HEART_BEAT));
         jsonStr = cJSON_Print(mJSONroot);
         JsonMsg * msg = (JsonMsg *)malloc(sizeof(JsonMsg));
         msg->fd = send_fd;
         msg->jsonStr = jsonStr;
 	sendHeartBeatInstak(msg);
-        //for heartbeat end    
+        //for heartbeat end  */  
 	break;
      
      default:
