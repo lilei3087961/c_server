@@ -19,7 +19,7 @@
 #define BUFFER_SIZE 30000
 #define BUFFER_LIMIT 1448 
 #define FILE_NAME_MAX_SIZE 512
-pthread_mutex_t mut; //¿¿¿¿¿
+pthread_mutex_t mut; //ï¿½ï¿½ï¿½ï¿½ï¿½
 int sid = -1;
 const char ADD_BEGIN_END_CHAR = 0;
 const char READ_BEGIN = 0xff;
@@ -58,10 +58,22 @@ void * RecvSocket(void * fd){
       break;
     }else{
       printf(">>>>received data length is: %d \n", length);
-      int i = 0,len = 0; 
       char null = NULL;
+      int i = 0,len = 0;
+      if(!ADD_BEGIN_END_CHAR){  //for short message
+    	  index = -1;
+    	  for(i=0; i < length; i++){
+    		  if(buffer[i] != null){
+    			  byteCharsMsg[++index] = buffer[i];
+    		  }
+    	  }
+    	  len = index + 1;
+    	  testJson(byteCharsMsg,len,fd);
+    	  return 0;
+      }
+
       if(!readBegin)
-	index = -1;
+	    index = -1;
       for(i; i < length; i++){
 	//printf(">>>data is %d>>is not ascii zero:%d\n", buffer[i],(buffer[i] != null));
         if(READ_BEGIN == buffer[i]){

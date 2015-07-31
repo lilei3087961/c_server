@@ -1,10 +1,3 @@
-//============================================================================
-// Name        : clinet.cpp
-// Author      : westchou
-// Version     : 1.0.0
-// Copyright   : Your copyright notice
-// Description : Created on 2015-5-19
-//============================================================================
 
 #include <sys/types.h>
 #include <sys/socket.h>

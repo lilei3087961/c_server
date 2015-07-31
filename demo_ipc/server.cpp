@@ -1,10 +1,3 @@
-//============================================================================
-// Name        : server.cpp
-// Author      : westchou
-// Version     : 1.0.0
-// Copyright   : Your copyright notice
-// Description : Created on 2015-5-19
-//============================================================================
 
 #include <stdio.h>
 #include <stdlib.h>

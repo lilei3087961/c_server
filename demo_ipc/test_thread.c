@@ -25,6 +25,7 @@ sendHeartBeatInstak(JsonMsg * jMsg){
 int main(void)
 {
   int sd = 1;
+  printf("file is:%s, function is:%s \n",__FILE__,__FUNCTION__);
   char arr[]="123"; 
   JsonMsg * msg = (JsonMsg *)malloc(sizeof(JsonMsg));
   msg->fd = 1;
